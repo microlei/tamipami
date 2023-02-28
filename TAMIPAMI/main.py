@@ -125,7 +125,7 @@ def merge_reads(fastq, fastq2, outfile) -> str:
     """
 
     try:
-        parameters = ['bbmerge.sh', 'in=' + fastq,
+        parameters = ['bbmap/bbmerge.sh', 'in=' + fastq,
                       'in2=' + fastq2,
                       'out=' + outfile,
                       'ecco=t',
