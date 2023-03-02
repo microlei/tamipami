@@ -75,10 +75,10 @@ def myparser() -> argparse.ArgumentParser:
     parser.add_argument('--exp2', '-e2', type=str, default=None,
                         help='A reverse .fastq, .fq, .fastq.gz or .fq.gz file.')
     parser.add_argument('--library', type=str, choices=["RTW544", "RTW555", "RTW572", "RTW574"],
-                        help='The Addgene library pool. For custom pools use the --spacer and --orientation flags'
+                        help='The Addgene HT PAM determination library pool. For custom pools use the --spacer and --orientation flags'
                         )
-    parser.add_argument('--spacer', type=str,  help='The spacee sequence for the guide RNA. Not needed if ---library is used' )
-    parser.add_argument('--orientation', type=str, choices=["3prime", "5prime"], help='the side of the sacer the PAM/TAM is on')
+    parser.add_argument('--spacer', type=str,  help='The spacer sequence for the guide RNA. Not needed if ---library is used' )
+    parser.add_argument('--orientation', type=str, choices=["3prime", "5prime"], help='the side of the spacer the PAM/TAM is on')
     parser.add_argument('--log', help="Log file", default="HT-TAMDA.log")
     parser.add_argument('--length', choices=range(1, 11), metavar="[1-10]",
                         help=" The length of the PAM or TAM sequences", default=4, type=int)
@@ -94,7 +94,7 @@ spacer_dict = {'RTW572': 'GGAATCCCTTCTGCAGCACCTGG',
 # spacer_dict = {'RTW572': {'spacer': 'GGAATCCCTTCTGCAGCACCTGG','orientation': '3prime'},
 #               'RTW554': {'spacer': 'GGGCACGGGCAGCTTGCCGG', 'orientation': '3prime'},
 #               'RTW555': {'spacer': 'GTCGCCCTCGAACTTCACCT', 'orientation': '5prime'},
-#               'RTW574': {'spacer': 'CTGATGGTCCATGTCTGTTACTC', 'orientation': '5prime'}
+#               'RTW574': {'spacer': 'CTGATGGTCCATGTCTGTTACTC', 'orientation': '5prime'}}
 
 
 def iterate_kmer(k: int) -> Dict:
@@ -158,7 +158,9 @@ def count_pam(spacer: str, fastq: str, pamlen: int, orientation: str) -> Dict:
                 pamstart = spacerstart - int(pamlen)
                 pamseq = seqstr[pamstart:spacerstart]
             if orientation== '3prime':
-                pass
+                spacerend = result.start()+len(spacer)
+                pamend = spacerend + int(pamlen)
+                pamseq = seqstr[spacerend:pamend]
             if pamseq in kmer_dict:
                 kmer_dict[pamseq] += 1
     return kmer_dict
@@ -275,11 +277,11 @@ def main(args=None):
     logging.info("Processing control reads")
     tempdir = tempfile.mkdtemp()
     cont_raw, cont_clr = process(fastq=args.cont1, fastq2=args.cont2, pamlen=args.length, tempdir=tempdir,
-                               spacer=spacer_dict[args.library], orientation='5prime')
+                               spacer=spacer_dict[args.library], orientation=args.orientation)
     tempdir2 = tempfile.mkdtemp()
     logging.info("Processing experimental reads")
     exp_raw, exp_clr = process(fastq=args.exp1, fastq2=args.exp2, pamlen=args.length, tempdir=tempdir2,
-                               spacer=spacer_dict[args.library], orientation='5prime')
+                               spacer=spacer_dict[args.library], orientation=args.orientation)
     df = make_df(cont_raw=cont_raw, cont_clr=cont_clr, exp_raw=exp_raw, exp_clr=exp_clr)
     make_logo(df=df, padjust=0.05, filename="logo.pdf" )
 
