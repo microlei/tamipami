@@ -74,11 +74,14 @@ def myparser() -> argparse.ArgumentParser:
                         help='A forward .fastq, .fq, .fastq.gz or .fq.gz file. .')
     parser.add_argument('--exp2', '-e2', type=str, default=None,
                         help='A reverse .fastq, .fq, .fastq.gz or .fq.gz file.')
-    parser.add_argument('--library', type=str, choices=["RTW544", "RTW555", "RTW572", "RTW574"],
-                        help='The Addgene HT PAM determination library pool. For custom pools use the --spacer and --orientation flags'
-                        )
-    parser.add_argument('--spacer', type=str,  help='The spacer sequence for the guide RNA. Not needed if ---library is used' )
-    parser.add_argument('--orientation', type=str, choices=["3prime", "5prime"], help='the side of the spacer the PAM/TAM is on')
+    subparsers = parser.add_subparsers(help='Choose whether to use the predetermined library or your own custom spacer/orientation combination', dest='subcommand')
+
+    parser_lib = subparsers.add_parser('library', help='Toggles predetermined library mode, exclusive with custom. Specify the -lib-name with one of ["RTW544", "RTW555", "RTW572", "RTW574"]')
+    parser_lib.add_argument('-lib-name', type=str, help='type lib name here', choices=["RTW572", "RTW554", "RTW555", "RTW574"], required=True)
+
+    parser_cust = subparsers.add_parser('custom', help='Toggles the custom mode, exclusive with library. Use -spacer SPACER and -orientation ["5prime","3prime"]')
+    parser_cust.add_argument('-spacer', type=str, help='spacer seq', required=True)
+    parser_cust.add_argument('-orientation', type=str, choices=['3prime','5prime'], help='orientation help', required=True)
     parser.add_argument('--log', help="Log file", default="HT-TAMDA.log")
     parser.add_argument('--length', choices=range(1, 11), metavar="[1-10]",
                         help=" The length of the PAM or TAM sequences", default=4, type=int)
@@ -276,13 +279,22 @@ def main(args=None):
     logging.info(args)
     logging.info("Processing control reads")
     tempdir = tempfile.mkdtemp()
+    if args.subcommand=='library':
+        print('Using predetermined library')
+        spacer=spacer_dict[args.lib_name].get('spacer')
+        orientation=spacer_dict[args.lib_name].get('orientation')
+    elif args.subcommand=='custom':
+        print('Using custom spacer/orientation pair')
+        spacer=args.spacer
+        orientation=args.orientation
     cont_raw, cont_clr = process(fastq=args.cont1, fastq2=args.cont2, pamlen=args.length, tempdir=tempdir,
-                               spacer=spacer_dict[args.library], orientation=args.orientation)
+                               spacer=spacer, orientation=orientation)
     tempdir2 = tempfile.mkdtemp()
     logging.info("Processing experimental reads")
     exp_raw, exp_clr = process(fastq=args.exp1, fastq2=args.exp2, pamlen=args.length, tempdir=tempdir2,
-                               spacer=spacer_dict[args.library], orientation=args.orientation)
+                               spacer=spacer, orientation=orientation)
     df = make_df(cont_raw=cont_raw, cont_clr=cont_clr, exp_raw=exp_raw, exp_clr=exp_clr)
+    df.to_csv('output_df.txt', index=False)
     make_logo(df=df, padjust=0.05, filename="logo.pdf" )
 
 
