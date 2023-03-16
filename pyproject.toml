@@ -2,28 +2,33 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools]
+packages = ["TAMIPAMI"]
 
 [project]
 name = "tamipami"
-version = "0.0.1"
+version = "0.8.0"
 description = "TBD"
 authors = [
     {name = "Adam R. Rivers", email =  "adam.rivers@usda.gov"}]
 maintainers = [
-    {name = "Adam R. Rivers", email =  "adam.rivers@usda.gov"}]
+    {name = "Adam R. Rivers", email =  "adam.rivers@usda.gov"},
+    {name = "Lei Ma", email = "lei.ma@usda.gov"}]
 license = {file = "LICENSE.txt"}
 readme = "README.rst"
-keywords = ["Amplicon", "sequencing", "fungal", "ITS"]
+keywords = ["Amplicon", "sequencing", "CRISPR", "TAM", "PAM"]
 requires-python = ">=3.5"
 
 dependencies = [
+    "argpase",
     "biopython",
     "pandas",
     "scikit-bio",
     "logomaker",
     "statsmodels",
     "scipy",
-    "matplotlib"
+    "matplotlib",
+    "seaborn"
 ]
 
 

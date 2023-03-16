@@ -1,0 +1,36 @@
+{% set name = "TAMIPAMI" %}
+{% set version = "0.8.0" %}
+{% set file_ext = "tar.gz" %}
+{% set hash_type = "sha256" %}
+{% set hash_value = "  b8686577bce2dd2b2eb7c3cc576cbc8a5cda745e958282e04e6dfa6a6685be8b" %}
+
+
+package:
+  name: '{{ name|lower }}'
+  version: '{{ version }}'
+
+source:
+  url: https://github.com/microlei/tamipami/releases/download/{{ version }}/tamipami-{{ version }}.{{ file_ext}}
+  '{{ hash_type }}': 'b8686577bce2dd2b2eb7c3cc576cbc8a5cda745e958282e04e6dfa6a6685be8b'
+
+build:
+  noarch: python
+  number: 0
+  entry_points:
+    - tamipami=TAMIPAMI.main:main
+  script: python -m pip install --no-deps --ignore-installed .
+
+requirements:
+  host:
+    - pip
+    - python >=3
+  run:
+    - pip
+    - python >=3
+    - vsearch >=2.22
+
+about:
+  home: http://github.com/microlei/tamipami
+  license: 'MIT'
+  summary: 'tamipami: Software to find protospacer-adjacent motif (PAM) sites'
+
